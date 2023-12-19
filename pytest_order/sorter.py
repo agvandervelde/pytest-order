@@ -10,6 +10,8 @@ from _pytest.python import Function
 from .item import Item, ItemList, ItemGroup, filter_marks, move_item, RelativeMark
 from .settings import Settings, Scope
 
+import json
+
 try:
     from typing import OrderedDict
 except ImportError:
@@ -378,6 +380,16 @@ class ScopeSorter:
         else:
             self.rel_marks = filter_marks(rel_marks, self.items)
             self.dep_marks = filter_marks(dep_marks, self.items)
+
+        # Obtain item relationships
+        with open("/tmp/test_order.json", "wt", encoding="utf-8") as f:
+            json.dump([
+                {
+                    "item": str(x.item.item),
+                    "item_to_move": str(x.item_to_move.item),
+                    "move_after": x.move_after
+                } for x in self.dep_marks + self.rel_marks
+            ], f, indent=2)
 
     def sort_items(self) -> List[Item]:
         if self.settings.group_scope.value < self.settings.scope.value:
